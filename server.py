@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 from sys import argv
-from flask import Flask, request, jsonify, make_response
+from flask import Flask, request
 from llama_cpp import Llama
 import os
 import base64
-import re
 
 def find_bin_file(directory, censored=False):
     for file_name in os.listdir(directory):
@@ -50,12 +49,17 @@ def handle_prompt():
         app.logger.error(e)
         return 'Not a base64 string'
 
+@app.route('/preprompt', methods=['GET'])
+def handle_get_preprompt():
+    global preprompt
+    return b64e(preprompt.encode('utf-8'))
+
 @app.route('/preprompt', methods=['POST'])
 def handle_preprompt():
     global lock
     global preprompt
     if lock:
-        return 'Yes'
+        return 'No'
     data = request.get_json()
     try:
         bare_preprompt_base64 = data.get('preprompt')
